@@ -2,9 +2,9 @@ package com.roastkoff.displayposter.ui.screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.roastkoff.displayposter.common.DisplayPreferences
 import com.roastkoff.displayposter.repository.DisplayRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -13,36 +13,30 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: DisplayRepository,
+    private val prefs: DisplayPreferences
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState
 
-    private var listenJob: Job? = null
-
     init {
-        start()
+        viewModelScope.launch {
+            prefs.displayId.collect { id ->
+                if (id != null) {
+                    loadDisplay(id)
+                }
+            }
+        }
     }
 
-    fun start() {
-//        val prefs = Prefs(app)
-//        val displayId = prefs.displayId ?: return
-//        ui = ui.copy(
-//            deviceName = displayId.take(6),
-//            tenantId = prefs.tenantId,
-//            branchId = prefs.branchId
-//        )
-
-        listenJob?.cancel()
-        listenJob = viewModelScope.launch {
-            repository.listenDisplayConfig("displayId").collect { cfg ->
-                if (cfg == null) return@collect
-                val playlist = repository.loadPlaylist(cfg.playlistId)
-                val interval = (cfg.overrides?.get("defaultIntervalMs") as? Number)?.toLong()
-                    ?: playlist?.defaultIntervalMs ?: 8000L
+    fun loadDisplay(displayId: String) {
+        viewModelScope.launch {
+            repository.listenDisplayConfig(displayId).collect { config ->
+                if (config == null) return@collect
+                val playlist = repository.loadPlaylist(config.playlistId)
                 _uiState.value = _uiState.value.copy(
-                    version = cfg.version,
-                    defaultIntervalMs = interval,
+                    version = config.version,
+                    defaultIntervalMs = playlist?.defaultIntervalMs ?: 8000L,
                     items = playlist?.items ?: emptyList(),
                     lastSync = java.time.LocalTime.now().withNano(0).toString()
                 )

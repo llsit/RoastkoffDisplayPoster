@@ -81,6 +81,8 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.work.ktx)
     implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.datastore.preferences)
+    implementation(libs.datastore.core)
 
     implementation(libs.coil.compose)
     implementation(libs.media3.ui)
