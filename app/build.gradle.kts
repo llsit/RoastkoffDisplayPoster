@@ -83,8 +83,9 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
 
     implementation(libs.coil.compose)
-    implementation(libs.exoplayer.core)
-    implementation(libs.exoplayer.ui)
+    implementation(libs.media3.ui)
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.session)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)

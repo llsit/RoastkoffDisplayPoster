@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -26,11 +26,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.ui.PlayerView
 import com.roastkoff.displayposter.repository.PlaylistItem
 import kotlinx.coroutines.delay
 
@@ -38,17 +39,18 @@ import kotlinx.coroutines.delay
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val ui = viewModel.ui
-    val bg = Color(0xFF0B0D12)
+    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
+
     Box(
         Modifier
             .fillMaxSize()
-            .background(bg)
+            .background(Color(0xFF0B0D12))
     ) {
-        // Player: แสดงรูป/วิดีโอวนตามรายการ
-        PlayerSurface(items = ui.items, defaultIntervalMs = ui.defaultIntervalMs)
+        PlayerSurface(
+            items = uiState.value.items,
+            defaultIntervalMs = uiState.value.defaultIntervalMs
+        )
 
-        // ปุ่ม Info
         FloatingActionButton(
             onClick = { },
             containerColor = Color(0xFF222A35),
@@ -57,7 +59,7 @@ fun HomeScreen(
                 .padding(20.dp)
         ) { Text("i", color = Color.White, fontSize = 18.sp) }
 
-        if (ui.infoOpen) {
+        if (uiState.value.infoOpen) {
             AlertDialog(
                 onDismissRequest = { viewModel.toggleInfo(false) },
                 confirmButton = {
@@ -65,13 +67,15 @@ fun HomeScreen(
                 },
                 title = { Text("Display Info") },
                 text = {
-                    Column {
-                        Text("Display: ${ui.deviceName}")
-                        Text("Tenant: ${ui.tenantId ?: "-"}")
-                        Text("Branch: ${ui.branchId ?: "-"}")
-                        Text("Version: ${ui.version}")
-                        Text("Last Sync: ${ui.lastSync}")
-                        Text("Items: ${ui.items.size}")
+                    uiState.value.let { info ->
+                        Column {
+                            Text("Display: ${info.deviceName}")
+                            Text("Tenant: ${info.tenantId ?: "-"}")
+                            Text("Branch: ${info.branchId ?: "-"}")
+                            Text("Version: ${info.version}")
+                            Text("Last Sync: ${info.lastSync}")
+                            Text("Items: ${info.items.size}")
+                        }
                     }
                 }
             )
@@ -84,7 +88,7 @@ fun PlayerSurface(
     items: List<PlaylistItem>,
     defaultIntervalMs: Long
 ) {
-    var index by remember(items) { mutableStateOf(0) }
+    var index by remember(items) { mutableIntStateOf(0) }
     val current = items.getOrNull(index)
 
     LaunchedEffect(current, items) {
@@ -93,7 +97,6 @@ fun PlayerSurface(
             delay(current.durationMs ?: defaultIntervalMs)
             index = if (items.isNotEmpty()) (index + 1) % items.size else 0
         }
-        // วิดีโอ: จะขยับ index ใน onVideoEnded()
     }
 
     Box(
@@ -140,36 +143,45 @@ fun VideoPlayer(
     volume: Float,
     onEnded: () -> Unit
 ) {
-    val ctx = LocalContext.current
-    val exo = remember {
-        ExoPlayer.Builder(ctx).build().apply {
+    val context = LocalContext.current
+
+    val player = remember {
+        ExoPlayer.Builder(context).build().apply {
             repeatMode = Player.REPEAT_MODE_OFF
         }
     }
+
     DisposableEffect(uri, mute, volume) {
-        val item = MediaItem.fromUri(uri)
-        exo.setMediaItem(item)
-        exo.prepare()
-        exo.volume = if (mute) 0f else volume.coerceIn(0f, 1f)
-        exo.playWhenReady = true
+        val mediaItem = MediaItem.fromUri(uri)
+        player.setMediaItem(mediaItem)
+        player.prepare()
+        player.volume = if (mute) 0f else volume.coerceIn(0f, 1f)
+        player.playWhenReady = true
+
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
                 if (state == Player.STATE_ENDED) onEnded()
             }
         }
-        exo.addListener(listener)
+        player.addListener(listener)
+
         onDispose {
-            exo.removeListener(listener)
-            exo.stop(); exo.clearMediaItems()
+            player.removeListener(listener)
+            player.stop()
+            player.clearMediaItems()
+            player.release()
         }
     }
+
     AndroidView(
         modifier = Modifier.fillMaxSize(),
-        factory = {
-            PlayerView(it).apply {
-                useController = false; player = exo
+        factory = { context ->
+            PlayerView(context).apply {
+                useController = false
+                this.player = player
             }
-        }
+        },
+        update = { it.player = player }
     )
 }
 
