@@ -1,5 +1,6 @@
 package com.roastkoff.displayposter.ui.screen
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.roastkoff.displayposter.common.DisplayPreferences
@@ -20,22 +21,25 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState
 
     init {
-        viewModelScope.launch {
-            prefs.displayId.collect { id ->
-                if (id != null) {
-                    loadDisplay(id)
-                }
-            }
-        }
+        loadDisplay()
+//        viewModelScope.launch {
+//            prefs.displayId.collect { id ->
+//                if (id != null) {
+//                    loadDisplay(id)
+//                }
+//            }
+//        }
     }
 
-    fun loadDisplay(displayId: String) {
+    fun loadDisplay(displayId: String = "k5JlaY4UFpM8zxXA9QZy") {
         viewModelScope.launch {
             repository.listenDisplayConfig(displayId).collect { config ->
+                Log.d("HomeViewModel", config.toString())
                 if (config == null) return@collect
                 val playlist = repository.loadPlaylist(config.playlistId)
+                Log.d("HomeViewModel", playlist.toString())
                 _uiState.value = _uiState.value.copy(
-                    version = config.version,
+                    version = config.version.toLong(),
                     defaultIntervalMs = playlist?.defaultIntervalMs ?: 8000L,
                     items = playlist?.items ?: emptyList(),
                     lastSync = java.time.LocalTime.now().withNano(0).toString()

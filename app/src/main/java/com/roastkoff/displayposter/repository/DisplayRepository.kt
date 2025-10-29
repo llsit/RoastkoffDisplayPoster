@@ -1,5 +1,6 @@
 package com.roastkoff.displayposter.repository
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import jakarta.inject.Inject
@@ -21,6 +22,7 @@ class DisplayRepositoryImpl @Inject constructor(
             .document(displayId)
             .addSnapshotListener { snap, e ->
                 if (e != null) {
+                    Log.e("DisplayRepository", e.message.toString())
                     trySend(null)
                     return@addSnapshotListener
                 }
