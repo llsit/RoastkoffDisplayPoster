@@ -33,6 +33,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import com.roastkoff.displayposter.repository.PlaylistItem
+import com.roastkoff.displayposter.repository.PlaylistItemFit
+import com.roastkoff.displayposter.repository.PlaylistItemType
 import kotlinx.coroutines.delay
 
 @Composable
@@ -93,7 +95,7 @@ fun PlayerSurface(
 
     LaunchedEffect(current, items) {
         if (current == null) return@LaunchedEffect
-        if (current.type == "image") {
+        if (current.type == PlaylistItemType.IMAGE) {
             delay(current.durationMs ?: defaultIntervalMs)
             index = if (items.isNotEmpty()) (index + 1) % items.size else 0
         }
@@ -105,24 +107,24 @@ fun PlayerSurface(
             .background(Color.Black)
     ) {
         when (current?.type) {
-            "image" -> {
+            PlaylistItemType.IMAGE -> {
                 AsyncImage(
                     model = current.src,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = when (current.fit) {
-                        "cover" -> ContentScale.Crop
-                        "fill" -> ContentScale.FillBounds
+                        PlaylistItemFit.COVER -> ContentScale.Crop
+                        PlaylistItemFit.FILL -> ContentScale.FillBounds
                         else -> ContentScale.Fit
                     }
                 )
             }
 
-            "video" -> {
+            PlaylistItemType.VIDEO -> {
                 VideoPlayer(
                     uri = current.src,
-                    mute = current.mute ?: false,
-                    volume = (current.volume ?: 1.0).toFloat(),
+                    mute = current.mute,
+                    volume = current.volume.toFloat(),
                     onEnded = {
                         index = if (items.isNotEmpty()) (index + 1) % items.size else 0
                     }

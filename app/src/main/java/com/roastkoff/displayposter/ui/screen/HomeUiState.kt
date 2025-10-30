@@ -11,5 +11,7 @@ data class HomeUiState(
     val lastSync: String = "--",
     val version: Long = 0,
     val defaultIntervalMs: Long = 8000,
-    val items: List<PlaylistItem> = emptyList()
+    val items: List<PlaylistItem> = emptyList(),
+    val error: String? = null,
+    val isLoading: Boolean = false
 )
