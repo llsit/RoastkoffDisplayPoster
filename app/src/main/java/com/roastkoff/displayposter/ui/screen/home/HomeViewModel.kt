@@ -1,4 +1,4 @@
-package com.roastkoff.displayposter.ui.screen
+package com.roastkoff.displayposter.ui.screen.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -46,7 +47,7 @@ class HomeViewModel @Inject constructor(
                                 version = config.version,
                                 defaultIntervalMs = 8000L,
                                 items = emptyList(),
-                                lastSync = java.time.LocalTime.now().withNano(0).toString()
+                                lastSync = LocalTime.now().withNano(0).toString()
                             )
                         } else {
                             repository.loadPlaylist(config.playlistId).collect { playlist ->
@@ -59,7 +60,7 @@ class HomeViewModel @Inject constructor(
                                             defaultIntervalMs = playlist.data?.defaultIntervalMs
                                                 ?: 8000L,
                                             items = playlist.data?.items ?: emptyList(),
-                                            lastSync = java.time.LocalTime.now().withNano(0)
+                                            lastSync = LocalTime.now().withNano(0)
                                                 .toString()
                                         )
                                     }

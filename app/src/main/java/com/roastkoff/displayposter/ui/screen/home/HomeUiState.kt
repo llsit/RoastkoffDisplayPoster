@@ -1,4 +1,4 @@
-package com.roastkoff.displayposter.ui.screen
+package com.roastkoff.displayposter.ui.screen.home
 
 import com.roastkoff.displayposter.repository.PlaylistItem
 

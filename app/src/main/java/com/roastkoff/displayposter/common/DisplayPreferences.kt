@@ -17,18 +17,18 @@ class DisplayPreferences @Inject constructor(
     companion object {
         private val KEY_DISPLAY_ID = stringPreferencesKey("display_id")
         private val KEY_TENANT_ID = stringPreferencesKey("tenant_id")
-        private val KEY_BRANCH_ID = stringPreferencesKey("branch_id")
+        private val KEY_GROUP_ID = stringPreferencesKey("group_id")
     }
 
     val displayId: Flow<String?> = context.dataStore.data.map { it[KEY_DISPLAY_ID] }
     val tenantId: Flow<String?> = context.dataStore.data.map { it[KEY_TENANT_ID] }
-    val branchId: Flow<String?> = context.dataStore.data.map { it[KEY_BRANCH_ID] }
+    val groupId: Flow<String?> = context.dataStore.data.map { it[KEY_GROUP_ID] }
 
-    suspend fun saveDisplayInfo(displayId: String, tenantId: String?, branchId: String?) {
+    suspend fun saveDisplayInfo(displayId: String, tenantId: String?, groupId: String?) {
         context.dataStore.edit {
             it[KEY_DISPLAY_ID] = displayId
             if (tenantId != null) it[KEY_TENANT_ID] = tenantId
-            if (branchId != null) it[KEY_BRANCH_ID] = branchId
+            if (groupId != null) it[KEY_GROUP_ID] = groupId
         }
     }
 
