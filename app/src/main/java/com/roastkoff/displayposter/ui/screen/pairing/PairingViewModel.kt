@@ -33,11 +33,39 @@ class PairingViewModel @Inject constructor(
     private var listenJob: Job? = null
 
     init {
-        createNewSession()
+        checkingPairingDisplay()
     }
 
-    fun refreshCode() {
-        createNewSession()
+    fun checkingPairingDisplay() {
+        viewModelScope.launch {
+            val alreadyPaired = prefs.isPaired()
+            if (alreadyPaired) {
+                _uiState.update {
+                    it.copy(
+                        code = null,
+                        loading = false,
+                        errorMessage = null,
+                        isPaired = true
+                    )
+                }
+                return@launch
+            }
+
+            val savedCode = prefs.getPairingCode()
+            if (savedCode != null) {
+                _uiState.update {
+                    it.copy(
+                        code = savedCode,
+                        loading = false,
+                        errorMessage = null,
+                        isPaired = false
+                    )
+                }
+                startListenPairing(savedCode)
+            } else {
+                createNewSession()
+            }
+        }
     }
 
     private fun createNewSession() {
@@ -49,7 +77,16 @@ class PairingViewModel @Inject constructor(
             runCatching {
                 pairingRepository.createPairingSession()
             }.onSuccess { code ->
-                _uiState.update { it.copy(code = code, loading = false, errorMessage = null) }
+                prefs.savePairingCode(code)
+
+                _uiState.update {
+                    it.copy(
+                        code = code,
+                        loading = false,
+                        errorMessage = null
+                    )
+                }
+
                 startListenPairing(code)
             }.onFailure { e ->
                 _uiState.update {

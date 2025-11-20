@@ -1,5 +1,6 @@
 package com.roastkoff.displayposter.repository
 
+import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -35,24 +36,27 @@ class PairingRepositoryImpl @Inject constructor(
     override suspend fun createPairingSession(): String {
         val code = generateCode()
         val now = Date()
-        val expires = Date(now.time + 5 * 60_000) // 5 นาที
+        val expires = Date(now.time + 5 * 60_000)
 
         val data = hashMapOf(
-            "code" to code,
             "status" to "pending",
-            "tenantId" to null,
-            "groupId" to null,
-            "displayId" to null,
             "createdAt" to FieldValue.serverTimestamp(),
             "expiresAt" to Timestamp(expires)
         )
 
-        firestore.collection("pairingSessions")
-            .document(code)
-            .set(data)
-            .await()
+        try {
+            firestore.collection("pairingSessions")
+                .document(code)
+                .set(data)
+                .await()
 
-        return code
+            return code
+
+        } catch (e: Exception) {
+            Log.e("PairingRepo", "❌ Failed to create session", e)
+            Log.e("PairingRepo", "Error message: ${e.message}")
+            throw e
+        }
     }
 
     override fun listenPairing(code: String): Flow<PairingResult> = callbackFlow {

@@ -8,7 +8,7 @@ app/src/*/google-services.json
 app/src/*/GoogleService-Info.plist
 
 # Prevent accidental uploads in root
-/google-services.json
+/src/dev/google-services.json
 /GoogleService-Info.plist
 
 # Firebase Crashlytics

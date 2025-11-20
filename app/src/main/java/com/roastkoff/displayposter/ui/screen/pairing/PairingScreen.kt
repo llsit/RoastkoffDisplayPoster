@@ -105,44 +105,42 @@ fun PairingScreen(
                             }
 
                             uiState.code != null -> {
-                                Text(
-                                    text = uiState.code!!,
-                                    fontSize = 64.sp,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    textAlign = TextAlign.Center
-                                )
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = uiState.code!!,
+                                        fontSize = 72.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        textAlign = TextAlign.Center,
+                                        letterSpacing = 8.sp
+                                    )
+
+                                    if (uiState.errorMessage == null) {
+                                        Text(
+                                            text = "รอการเชื่อมต่อ...",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
                             }
 
                             uiState.errorMessage != null -> {
-                                Text(
-                                    text = uiState.errorMessage!!,
-                                    color = MaterialTheme.colorScheme.error,
-                                    textAlign = TextAlign.Center
-                                )
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    Text(
+                                        text = uiState.errorMessage!!,
+                                        color = MaterialTheme.colorScheme.error,
+                                        textAlign = TextAlign.Center,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
                             }
                         }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Button(
-                        onClick = { viewModel.refreshCode() },
-                        enabled = !uiState.loading
-                    ) {
-                        Text("สร้างโค้ดใหม่")
-                    }
-
-                    if (uiState.errorMessage != null) {
-                        Text(
-                            text = uiState.errorMessage!!,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
                     }
                 }
             }

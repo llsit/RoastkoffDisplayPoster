@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -18,11 +19,34 @@ class DisplayPreferences @Inject constructor(
         private val KEY_DISPLAY_ID = stringPreferencesKey("display_id")
         private val KEY_TENANT_ID = stringPreferencesKey("tenant_id")
         private val KEY_GROUP_ID = stringPreferencesKey("group_id")
+        private val KEY_PAIRING_CODE = stringPreferencesKey("pairing_code")
     }
 
     val displayId: Flow<String?> = context.dataStore.data.map { it[KEY_DISPLAY_ID] }
     val tenantId: Flow<String?> = context.dataStore.data.map { it[KEY_TENANT_ID] }
     val groupId: Flow<String?> = context.dataStore.data.map { it[KEY_GROUP_ID] }
+    val pairingCode: Flow<String?> = context.dataStore.data.map { it[KEY_PAIRING_CODE] }
+
+    suspend fun getPairingCode(): String? {
+        return pairingCode.first()
+    }
+
+    suspend fun savePairingCode(code: String) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_PAIRING_CODE] = code
+        }
+    }
+
+    suspend fun clearPairingCode() {
+        context.dataStore.edit { prefs ->
+            prefs.remove(KEY_PAIRING_CODE)
+        }
+    }
+
+    suspend fun isPaired(): Boolean {
+        val id = displayId.first()
+        return id != null
+    }
 
     suspend fun saveDisplayInfo(displayId: String, tenantId: String?, groupId: String?) {
         context.dataStore.edit {
@@ -32,7 +56,7 @@ class DisplayPreferences @Inject constructor(
         }
     }
 
-    suspend fun clear() {
+    suspend fun clearAll() {
         context.dataStore.edit { it.clear() }
     }
 }
