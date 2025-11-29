@@ -7,7 +7,7 @@ data class HomeUiState(
     val infoOpen: Boolean = false,
     val deviceName: String = "",
     val tenantId: String? = null,
-    val branchId: String? = null,
+    val groupId: String? = null,
     val lastSync: String = "--",
     val version: Long = 0,
     val defaultIntervalMs: Long = 8000,

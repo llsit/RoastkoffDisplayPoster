@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PlaylistDto(
     val tenantId: String = "",
-    val branchId: String? = null,
+    val groupId: String? = null,
     val name: String = "",
     val defaultIntervalMs: Any? = null,
     val loop: Boolean = true,
@@ -17,7 +17,7 @@ data class PlaylistDto(
 @Serializable
 data class Playlist(
     val tenantId: String = "",
-    val branchId: String? = null,
+    val groupId: String? = null,
     val name: String = "",
     val defaultIntervalMs: Long = 8000,
     val loop: Boolean = true,
@@ -28,7 +28,7 @@ data class Playlist(
 fun PlaylistDto.toDomain(): Playlist {
     return Playlist(
         tenantId = tenantId,
-        branchId = branchId,
+        groupId = groupId,
         name = name,
         defaultIntervalMs = defaultIntervalMs.toLongSafe(8000),
         loop = loop,

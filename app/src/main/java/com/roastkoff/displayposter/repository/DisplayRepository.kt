@@ -18,7 +18,7 @@ class DisplayRepositoryImpl @Inject constructor(
 ) : DisplayRepository {
     override fun listenDisplayConfig(displayId: String): Flow<Resource<DisplayConfig>> =
         callbackFlow {
-            val data = firestore.collection("displayConfigs")
+            val data = firestore.collection("displays")
                 .document(displayId)
                 .addSnapshotListener { snap, e ->
                     if (e != null) {

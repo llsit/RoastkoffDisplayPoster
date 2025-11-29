@@ -24,17 +24,16 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState
 
     init {
-        loadDisplay()
-//        viewModelScope.launch {
-//            prefs.displayId.collect { id ->
-//                if (id != null) {
-//                    loadDisplay(id)
-//                }
-//            }
-//        }
+        viewModelScope.launch {
+            prefs.displayId.collect { id ->
+                if (id != null) {
+                    loadDisplay(id)
+                }
+            }
+        }
     }
 
-    fun loadDisplay(displayId: String = "k5JlaY4UFpM8zxXA9QZy") {
+    fun loadDisplay(displayId: String) {
         viewModelScope.launch {
             repository.listenDisplayConfig(displayId).collect { configResult ->
                 when (configResult) {
@@ -42,7 +41,7 @@ class HomeViewModel @Inject constructor(
                     Resource.Loading -> {}
                     is Resource.Success<DisplayConfig> -> {
                         val config = configResult.data
-                        if (config.playlistId.isEmpty()) {
+                        if (config.activePlaylistId.isEmpty()) {
                             _uiState.value = _uiState.value.copy(
                                 version = config.version,
                                 defaultIntervalMs = 8000L,
@@ -50,7 +49,7 @@ class HomeViewModel @Inject constructor(
                                 lastSync = LocalTime.now().withNano(0).toString()
                             )
                         } else {
-                            repository.loadPlaylist(config.playlistId).collect { playlist ->
+                            repository.loadPlaylist(config.activePlaylistId).collect { playlist ->
                                 when (playlist) {
                                     is Resource.Error -> {}
                                     Resource.Loading -> {}

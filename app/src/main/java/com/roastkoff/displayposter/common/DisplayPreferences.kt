@@ -20,12 +20,14 @@ class DisplayPreferences @Inject constructor(
         private val KEY_TENANT_ID = stringPreferencesKey("tenant_id")
         private val KEY_GROUP_ID = stringPreferencesKey("group_id")
         private val KEY_PAIRING_CODE = stringPreferencesKey("pairing_code")
+        private val KEY_USER_ID = stringPreferencesKey("user_id")
     }
 
     val displayId: Flow<String?> = context.dataStore.data.map { it[KEY_DISPLAY_ID] }
     val tenantId: Flow<String?> = context.dataStore.data.map { it[KEY_TENANT_ID] }
     val groupId: Flow<String?> = context.dataStore.data.map { it[KEY_GROUP_ID] }
     val pairingCode: Flow<String?> = context.dataStore.data.map { it[KEY_PAIRING_CODE] }
+    val userId: Flow<String?> = context.dataStore.data.map { it[KEY_USER_ID] }
 
     suspend fun getPairingCode(): String? {
         return pairingCode.first()
@@ -41,6 +43,23 @@ class DisplayPreferences @Inject constructor(
         context.dataStore.edit { prefs ->
             prefs.remove(KEY_PAIRING_CODE)
         }
+    }
+
+    suspend fun saveUserId(id: String) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_USER_ID] = id
+        }
+    }
+
+    suspend fun clearUserId(id: String) {
+        context.dataStore.edit { prefs ->
+            prefs.remove(KEY_USER_ID)
+        }
+    }
+
+    suspend fun isLoggedIn(): Boolean {
+        val id = userId.first()
+        return id != null
     }
 
     suspend fun isPaired(): Boolean {

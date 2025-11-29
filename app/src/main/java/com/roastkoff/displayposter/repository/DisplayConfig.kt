@@ -9,7 +9,7 @@ import java.util.Date
 data class DisplayConfig(
     val version: Long,
     val updatedAt: Date?,
-    val playlistId: String,
+    val activePlaylistId: String,
     val overrides: List<String>
 )
 
@@ -17,7 +17,7 @@ data class DisplayConfig(
 data class DisplayConfigDto(
     val version: Any? = null,
     val updatedAt: Any? = null,
-    val playlistId: String? = null,
+    val activePlaylistId: String? = null,
     val overrides: List<String>? = null
 )
 
@@ -25,7 +25,7 @@ fun DisplayConfigDto.toDomain(): DisplayConfig {
     return DisplayConfig(
         version = version.toLongSafe(0L),
         updatedAt = updatedAt?.toDateSafe(),
-        playlistId = playlistId ?: "",
+        activePlaylistId = activePlaylistId ?: "",
         overrides = overrides ?: emptyList()
     )
 }
